@@ -1,0 +1,115 @@
+<toolbar></toolbar>
+<div id="wrapper_for_list_of_tasks" ng-controller="ListOfTasksController">
+    <div id="description_of_list_of_tasks">
+        <fieldset>
+            <legend>Список задач: {{ listOfTasks.name }}</legend>
+			<span>
+				<p>
+                    Описание: {{ listOfTasks.description }}
+                    <button ng-click="modalDialogEditMetaInfoAboutListOfTasks()"
+                            class="btn btn-success pull-right"
+                            id="editMetaInfoAboutListOfTasks"
+                    >
+                        <i class="fa fa-cog" aria-hidden="true">&nbsp;Изменить мета-информацию</i>
+                    </button>
+                </p>
+			</span>
+        </fieldset>
+    </div>
+
+    <div id="description_of_tasks" ng-controller="TasksController">
+        <fieldset>
+            <legend>Описание задач:</legend>
+            <div id="list_of_statuses">
+                <ul>
+                    <li ng-click="statusOfTasks = ''"><span>Все</span></li>
+                    <li ng-click="statusOfTasks = 'PLAN'"><span>В плане</span></li>
+                    <li ng-click="statusOfTasks = 'PROCESS'"><span>В процессе</span></li>
+                    <li ng-click="statusOfTasks = 'DONE'"><span>Решенные</span></li>
+                </ul>
+            </div>
+
+            <div class="clear"></div>
+
+            <div id="search">
+                <div class="input-group">
+                    <input ng-model="descriptionOfTask" class="form-control" type="text" placeholder="Введите описание задачи">
+                    <span class="input-group-btn">
+                         <button id="add" class="pull-right btn btn-success" type="button" ng-click="newTask(descriptionOfTask)">
+                             <i class="fa fa-plus" aria-hidden="true"></i>&nbsp; Добавить задачу
+                         </button>
+                    </span>
+                </div>
+            </div>
+
+            <div id="list_of_tasks">
+                <!-- добавляем возможность 'drag and drop' -->
+                <ul dnd-list="models.tasks">
+                    <li ng-repeat="task in models.tasks | filter:{status:statusOfTasks} | filter:{description:descriptionOfTask}"
+                        dnd-draggable="task"
+                        dnd-moved="models.tasks.splice($index, 1)"
+                        dnd-effect-allowed="move"
+                        dnd-selected="models.selected = item"
+                        dnd-dragend="updatePositionsOfTasks()"
+                        ng-class="{
+							'selected': models.selected === item,
+
+							'plan': task.status === 'PLAN',
+							'process': task.status === 'PROCESS',
+							'done': task.status === 'DONE'
+						}"
+                        class="description_of_task"
+                    >
+                        <span>{{ task.description }}</span>
+                        <ul>
+                            <li>
+                                <button ng-click="modalDialogForEditDescription(task)" class="btn btn-primary">
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                </button>
+                            </li>
+
+                            <li ng-click="changeStatusToPlan(task)" ng-if="task.status == 'PROCESS'">
+                                <img src="img/status/orange_ellipse.png"
+                                     alt="Перевести задачу в состояние {status: 'PLAN'}">
+                            </li>
+                            <li ng-click="changeStatusToProcess(task)"
+                                ng-if="task.status == 'PLAN' || task.status == 'DONE'">
+                                <img src="img/status/yellow_ellipse.png"
+                                     alt="Перевести задачу в состояние {status: 'PROCESS'}">
+                            </li>
+                            <li ng-click="changeStatusToDone(task)" ng-if="task.status == 'PROCESS'">
+                                <img src="img/status/green_ellipse.png"
+                                     alt="Перевести задачу в состояние {status: 'DONE'}">
+                            </li>
+                            <li ng-click="deleteTask(task)"><img src="img/cross.jpg" alt="Удалить задачу"></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+<div id="colleagues" ng-controller="ListOfTasksController">
+    <p>Подписчики данного списка задач</p>
+
+    <!--<input id="search_of_user" type="text" placeholder="Добавить коллегу">-->
+    <button ng-click="modalDialogAddColleague()" id="addColleague" type="button" class="btn btn-success">
+        <i class="fa fa-user-plus" aria-hidden="true"></i>&nbsp; Добавить коллегу
+    </button>
+
+    <div id="list_of_colleagues">
+        <ul>
+            <li class="colleague" ng-repeat="subscriber in subscribers">
+                <ul>
+                    <li><img ng-src="{{ subscriber.pathToPhotoOfUser }}" alt="Фото пользователя" width="50" height="50"/></li>
+                    <li><span class="user_full_name">{{ subscriber.lastName }} {{ subscriber.firstName }}</span></li>
+                </ul>
+                <ul class="actions">
+                    <li ng-if="subscriber.guid != guidOfUser" ng-click="deleteSubscriber(subscriber)"><img
+                            src="img/cross.jpg" alt="Удалить из списка подписчиков"></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
